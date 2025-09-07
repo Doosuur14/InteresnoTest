@@ -39,5 +39,3 @@ final class PlayerView: UIView {
         set { playerLayer.videoGravity = newValue }
     }
 }
-
-

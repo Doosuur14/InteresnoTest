@@ -32,14 +32,11 @@ struct SingleDetailVideoView: View {
             }
         }
         .onAppear {
-            if let url = vm.getHLSURL(for: video.id) {
-                let p = AVPlayer(url: url)
-                p.isMuted = false
-                p.play()
+            if let p = vm.player(for: video.id) {
                 player = p
+                p.play()
             }
         }
         .onDisappear { player?.pause() }
     }
 }
-

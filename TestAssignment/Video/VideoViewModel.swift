@@ -6,11 +6,14 @@
 //
 
 import Foundation
+import AVFoundation
 
 @MainActor
 final class VideoViewModel: ObservableObject {
     @Published var videos: [Video] = []
     @Published var error: String?
+
+    private var players: [Int: AVPlayer] = [:]
 
     func fetchVideos() async {
         let urlString = "https://interesnoitochka.ru/api/v1/videos/recommendations?offset=0&limit=10&category=shorts&date_filter_type=created&sort_by=date_created&sort_order=desc"
@@ -31,5 +34,21 @@ final class VideoViewModel: ObservableObject {
     func getHLSURL(for videoId: Int) -> URL?  {
         let urlString = "https://interesnoitochka.ru/api/v1/videos/video/\(videoId)/hls/playlist.m3u8"
         return URL(string: urlString)
+    }
+
+    func player(for videoId: Int) -> AVPlayer? {
+        if let existing = players[videoId] { return existing }
+        if let url = getHLSURL(for: videoId) {
+            let player = AVPlayer(url: url)
+            players[videoId] = player
+            return player
+        }
+        return nil
+    }
+
+    func preloadVideo(at index: Int) {
+        guard index >= 0, index < videos.count else { return }
+        let video = videos[index]
+        _ = player(for: video.id) // just force creation
     }
 }

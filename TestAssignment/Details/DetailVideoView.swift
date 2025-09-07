@@ -15,16 +15,29 @@ struct DetailVideosView: View {
     let startIndex: Int
     let onClose: () -> Void
 
+    @State private var currentIndex: Int
+
+    init(videos: [Video], vm: VideoViewModel, ns: Namespace.ID, startIndex: Int, onClose: @escaping () -> Void) {
+        self.videos = videos
+        self.vm = vm
+        self.ns = ns
+        self.startIndex = startIndex
+        self.onClose = onClose
+        _currentIndex = State(initialValue: startIndex)
+    }
+
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            LazyVStack(spacing: 0) {
-                ForEach(videos, id: \.id) { video in
-                    SingleDetailVideoView(video: video, vm: vm, ns: ns, onClose: onClose)
-                        .frame(height: UIScreen.main.bounds.height)
-                }
+        TabView(selection: $currentIndex) {
+            ForEach(Array(videos.enumerated()), id: \.1.id) { index, video in
+                SingleDetailVideoView(video: video, vm: vm, ns: ns, onClose: onClose)
+                    .tag(index)
+                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
             }
         }
+        .tabViewStyle(.page(indexDisplayMode: .never))
         .ignoresSafeArea()
+        .onChange(of: currentIndex) { newIndex in
+            vm.preloadVideo(at: newIndex + 1)
+        }
     }
 }
-
